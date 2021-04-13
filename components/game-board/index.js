@@ -3,62 +3,97 @@ import { View, Text, ScrollView, FlatList, Image, TouchableOpacity, StyleSheet, 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import firestore from '@react-native-firebase/firestore';
 
-const GameBoard = props => {
+const ChatRoom = props => {
   const [messageText, setMessageText] = useState('');
-  const [board, setBoard] = useState(["", "", "", "", "", "", "","", ""]);
-  const [playerTurn, setPlayerTurn] = "X";
 
-  //update firestore
-  const updateBoard = () => {
+
+  const submitMessage = () => {
     firestore()
-      .collection('t-games')
+      .collection('chats')
       .doc(props.RoomCode)
+      .collection("messages")
+      .add({
+        messageText: messageText,
+        author: {
+          uid: props.Auth().currentUser.uid,
+          photoURL: props.Auth().currentUser.photoURL,
+          displayName: props.Auth().currentUser.displayName,
+        },
+        messageDate: firestore.FieldValue.serverTimestamp(),
+      })
+      .then(() => {
+        Keyboard.dismiss();
+        setMessageText('');
+      });
+  }
+
+  const isTyping = () => {
+      firestore()
+        .collection('chats')
+        .doc(props.RoomCode)
+        .collection('users')
+        .doc(props.Auth().currentUser.uid)
+        .update({
+          userTyping: true,
+        });
+  }
+
+  const stopTyping = () => {
+    firestore()
+      .collection('chats')
+      .doc(props.RoomCode)
+      .collection('users')
+      .doc(props.Auth().currentUser.uid)
       .update({
-        board: [index]
+        userTyping: false,
+      });
   }
-  
 
-  const squareClicked = () => {
-    let playerTurn = 
-    board[index] = playerTurn
+  const updateLocation = async() => {
+    await props.getLocation()
+    firestore()
+      .collection('chats')
+      .doc(props.RoomCode)
+      .collection('users')
+      .doc(props.Auth().currentUser.uid)
+      .update({
+        location: props.CurrentLocation,
+      })
+
     
-    playerTurn = (playerTurn == "X") ? "O" : "X";
+  };
+    
 
-  }
-
-
-
-  //to check if player has won game
-  const checkIfWon = () => {
-    const winningConditions = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6]
-    ];
-    for(let i = 0; i < winningConditions.length; i++){
-      let winningRow = winningConditions[i]
-      let position1 = winningRow[0]
-      let position2 = winningRow[1]
-      let position3 = winningRow[2]
-      if(position1 == position2 && position2 == position3 && position1 == position3){
-        return "You win!"
-      }
+  const calculateDistance = (lat1, lon1) => {
+    //to turn coordinates into radians
+    let earthRadiusMiles = 3958.8;
+    let lat2 = props.CurrentLocation.coords.latitude;
+    let lon2 = props.CurrentLocation.coords.longitude;
+    let distanceLat = degreesToRadians(lat2-lat1);
+    let distanceLon = degreesToRadians(lon2-lon1);
+  
+    lat1 = degreesToRadians(lat1);
+    lat2 = degreesToRadians(lat2);
+  
+    let a = Math.sin(distanceLat/2) * Math.sin(distanceLat/2) + Math.sin(distanceLon/2) * Math.sin(distanceLon/2) * Math.cos(lat1) * Math.cos(lat2);
+    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  
+    let distanceMiles = earthRadiusMiles * c;
+    if (distanceMiles < 1) {
+      return Math.round(distanceMiles * 5280) * ' ft';
+    } else {
+      return Math.round(distanceMiles) + ' mi';
     }
-  }
-
-
-
-
-
-
-
-
-
+  };
+  
+  //to turn radians degrees into radians
+  const degreesToRadians = degrees => {
+    return (degrees * Math.PI / 180);
+  };
+  
+  const getMyself = () => {
+    for (var x=0;x<props.RoomUsers.length;x++) {
+      if (props.RoomUsers[x].uid === props.Auth().currentUser.uid) {
         //the RoomUsers reads it from firestore, not Authentication
         //the info is from RoomUsers not from authentication so need to match the uid 
         //display name and photo url is read from the firestore 
@@ -196,7 +231,7 @@ const GameBoard = props => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "##E5E5E5",
+    backgroundColor: "#302853",
     flexDirection: "column",
     flexGrow: 1,
     height: "100%",

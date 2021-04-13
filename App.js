@@ -39,7 +39,28 @@ const App: () => React$Node = () => {
   const [roomMessages, setRoomMessages] = useState();
   const [currentLocation, setCurrentLocation] = useState();
 
-  //subscribe to authorization events
+
+
+  
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /*//subscribe to authorization events
   useEffect(() => {
     const authSubscriber = auth().onAuthStateChanged(onAuthStateChanged);
     //^this is a listener for auth 
@@ -236,22 +257,61 @@ const App: () => React$Node = () => {
   )*/
 
   return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        { currentScreen === 'error' ? <LoginError ErrorDetails={error} updateScreen={updateScreen} /> : null }
-        { currentScreen === 'greeting' ? <Greeting updateScreen={updateScreen} Auth={auth} doSignOut={doSignOut} /> : null }
-        { currentScreen === 'registration' ? <Registration updateScreen={updateScreen} doRegister={doRegister} /> : null }
-        { currentScreen === 'configure-profile' ? <ConfigureProfile Auth={auth} updateScreen={updateScreen} /> : null }
-        { currentScreen === 'login' ? <Login doSignIn={doSignIn} updateScreen={updateScreen} /> : null }
-        { currentScreen === 'join-or-create' ? <CreateOrJoin updateScreen={updateScreen} joinRoom={joinRoom} /> : null }
-        { currentScreen === 'messages' ? <ChatRoom getLocation={getLocation} Auth={auth} CurrentLocation={currentLocation} updateScreen={updateScreen} RoomCode={roomCode} RoomUsers={roomUsers} Messages={roomMessages} /> : null }
-      </SafeAreaView>
-    </>
+  <View style={styles.container}>
+    
+    <View style={{flexDirection: 'row'}}>
+      <View style={styles.tile} onClick={squareClicked()} />
+      <View style={styles.tile} />
+      <View style={styles.tile} />
+    </View>
+
+    <View style={{flexDirection: 'row'}}>
+      <View style={styles.tile} />
+      <View style={styles.tile} />
+      <View style={styles.tile} />
+    </View>
+
+    <View style={{flexDirection: 'row'}}>
+      <View style={styles.tile} />
+      <View style={styles.tile} />
+      <View style={styles.tile} />
+    </View>
+
+  </View>
   );
 };
 
+
 const styles = StyleSheet.create({
+    container: {
+      flex: 1, 
+      backgroundColor: '#CDB0F1',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+
+    tile: {
+      boarderWidth: 1,
+      width: 100,
+      height: 100,
+    },
+
+    xTile: {
+      color: '#000000',
+      fontSize: 60,
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    
+    oTile: {
+      color: '#000000',
+      fontSize: 60,
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+
 
 });
 
